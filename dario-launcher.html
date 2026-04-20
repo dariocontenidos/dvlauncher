@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base de Operaciones · Darío</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0e;
+    --surface: #13131a;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e4dc;
+    --muted: #6b6880;
+    --accent1: #f0c060;
+    --accent2: #7de8c8;
+    --accent3: #e87d9a;
+    --accent4: #a78bfa;
+    --glow1: rgba(240,192,96,0.15);
+    --glow2: rgba(125,232,200,0.12);
+    --glow3: rgba(232,125,154,0.12);
+    --glow4: rgba(167,139,250,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* Animated background mesh */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 10% 20%, rgba(240,192,96,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 90% 80%, rgba(125,232,200,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(232,125,154,0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Subtle grid */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 32px 80px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 64px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.1s;
+  }
+
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 52px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .header-title em {
+    font-style: italic;
+    color: var(--accent1);
+  }
+
+  .header-subtitle {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+  }
+
+  /* Divider */
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.3s;
+  }
+
+  /* Tools grid */
+  .tools {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Tool card */
+  .tool {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+    opacity: 0;
+  }
+
+  .tool:nth-child(1) { animation: fadeUp 0.7s ease forwards 0.4s; }
+  .tool:nth-child(2) { animation: fadeUp 0.7s ease forwards 0.55s; }
+  .tool:nth-child(3) { animation: fadeUp 0.7s ease forwards 0.7s; }
+  .tool:nth-child(4) { animation: fadeUp 0.7s ease forwards 0.85s; }
+
+  .tool::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-color, var(--accent1)), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .tool::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, var(--glow-color, var(--glow1)), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .tool:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.14);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .tool:hover::before { opacity: 1; }
+  .tool:hover::after { opacity: 1; }
+
+  .tool-1 { --accent-color: var(--accent1); --glow-color: var(--glow1); }
+  .tool-2 { --accent-color: var(--accent2); --glow-color: var(--glow2); }
+  .tool-3 { --accent-color: var(--accent3); --glow-color: var(--glow3); }
+  .tool-4 { --accent-color: var(--accent4); --glow-color: var(--glow4); }
+
+  .tool-inner {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tool-icon {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    transition: transform 0.3s ease;
+  }
+
+  .tool:hover .tool-icon {
+    transform: scale(1.08) rotate(-3deg);
+  }
+
+  .tool-content { flex: 1; }
+
+  .tool-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .tool-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    margin-bottom: 8px;
+    transition: color 0.2s ease;
+  }
+
+  .tool-1:hover .tool-name { color: var(--accent1); }
+  .tool-2:hover .tool-name { color: var(--accent2); }
+  .tool-3:hover .tool-name { color: var(--accent3); }
+  .tool-4:hover .tool-name { color: var(--accent4); }
+
+  .tool-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+
+  .tool-arrow {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .tool:hover .tool-arrow {
+    border-color: var(--accent-color, var(--accent1));
+    color: var(--accent-color, var(--accent1));
+    transform: translateX(3px);
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.9s;
+  }
+
+  .footer-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+  }
+
+  .footer-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 8px var(--accent2);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Active state */
+  .tool:active {
+    transform: translateY(-1px) scale(0.99);
+  }
+
+  @media (max-width: 480px) {
+    .wrapper { padding: 48px 20px 60px; }
+    .tool-inner { gap: 16px; }
+    .tool-arrow { display: none; }
+    .tool { padding: 22px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header class="header">
+    <div class="header-label">// Base de Operaciones</div>
+    <h1 class="header-title">Mis <em>Herramientas</em></h1>
+    <p class="header-subtitle">Acceso rápido a tus apps personales. Todo en un solo lugar.</p>
+  </header>
+
+  <div class="divider"></div>
+
+  <nav class="tools">
+
+    <a class="tool tool-1" href="https://claude.ai/public/artifacts/06f532bd-a53a-4ced-a9a8-882a0683171c" target="_blank" rel="noopener">
+      <div class="tool-inner">
+        <div class="tool-icon">💓</div>
+        <div class="tool-content">
+          <div class="tool-number">01 · Bienestar</div>
+          <div class="tool-name">Pulso</div>
+          <div class="tool-desc">Cómo estás hoy. Tu ritmo interno, medido.</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="tool tool-2" href="https://claude.ai/public/artifacts/f698ef36-8a1f-4433-946d-4d042f1ab3b3" target="_blank" rel="noopener">
+      <div class="tool-inner">
+        <div class="tool-icon">🪞</div>
+        <div class="tool-content">
+          <div class="tool-number">02 · Autoconocimiento</div>
+          <div class="tool-name">Te Conozco</div>
+          <div class="tool-desc">Explorá tus patrones, creencias y motivaciones.</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="tool tool-3" href="https://claude.ai/chat/2deda54f-056a-480a-9be6-bea7e4c48dbf" target="_blank" rel="noopener">
+      <div class="tool-inner">
+        <div class="tool-icon">📡</div>
+        <div class="tool-content">
+          <div class="tool-number">03 · Claridad Mental</div>
+          <div class="tool-name">Señal / Ruido</div>
+          <div class="tool-desc">Separar lo urgente de lo importante. Enfoque total.</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="tool tool-4" href="https://pulso-app-bb75c-default-rtdb.firebaseio.com" target="_blank" rel="noopener">
+      <div class="tool-inner">
+        <div class="tool-icon">🔥</div>
+        <div class="tool-content">
+          <div class="tool-number">04 · Base de Datos</div>
+          <div class="tool-name">GetApp</div>
+          <div class="tool-desc">Firebase Realtime DB · Backend de Pulso.</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+  </nav>
+
+  <footer class="footer">
+    <span class="footer-text">DARÍO · HERRAMIENTAS PERSONALES</span>
+    <div class="footer-dot"></div>
+  </footer>
+
+</div>
+</body>
+</html>
